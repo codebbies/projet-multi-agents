@@ -1,0 +1,26 @@
+# Environment / secrets
+.env
+OAI_CONFIG_LIST
+
+# Données (déjà sauvegardées sur Azure Blob) — trop volumineuses pour git
+data/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Terraform
+infra/**/.terraform/
+infra/**/*.tfstate
+infra/**/*.tfstate.backup
+infra/**/.terraform.lock.hcl
+
+# OS
+.DS_Store
+Thumbs.db
+scripts/.executor_work/

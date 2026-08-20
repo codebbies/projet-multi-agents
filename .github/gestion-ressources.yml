@@ -1,0 +1,55 @@
+name: Gestion automatique des ressources Azure
+
+on:
+  schedule:
+    # 8h00 du matin, du lundi au vendredi (heure UTC — ajuste selon ton fuseau)
+    - cron: '0 8 * * 1-5'
+    # 18h00, du lundi au vendredi
+    - cron: '0 18 * * 1-5'
+  # Permet aussi de lancer manuellement depuis l'onglet "Actions" de GitHub
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'apply ou destroy'
+        required: true
+        default: 'apply'
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.15.8
+
+      - name: Connexion à Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: terraform init
+        run: terraform init
+
+      # Le matin (8h) : créer les ressources
+      - name: terraform apply (matin)
+        if: github.event.schedule == '0 8 * * 1-5' || github.event.inputs.action == 'apply'
+        run: terraform apply -auto-approve
+        env:
+          TF_VAR_sql_admin_login: ${{ secrets.SQL_ADMIN_LOGIN }}
+          TF_VAR_sql_admin_password: ${{ secrets.SQL_ADMIN_PASSWORD }}
+
+      # Le soir (18h) : tout supprimer
+      - name: terraform destroy (soir)
+        if: github.event.schedule == '0 18 * * 1-5' || github.event.inputs.action == 'destroy'
+        run: terraform destroy -auto-approve
+        env:
+          TF_VAR_sql_admin_login: ${{ secrets.SQL_ADMIN_LOGIN }}
+          TF_VAR_sql_admin_password: ${{ secrets.SQL_ADMIN_PASSWORD }}
