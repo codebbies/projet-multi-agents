@@ -66,16 +66,21 @@ resource "azurerm_redis_cache" "cache" {
 # --- Sandbox Docker (exécution de l'Exécuteur) — déjà optimisé
 #     par nature : ne tourne que pendant l'exécution réelle du
 #     code, pas besoin de le mettre dans le cycle apply/destroy.
+#     Image alignée sur la vraie sandbox locale (docker/executor/Dockerfile) :
+#     Linux + Python/pandas, pas Windows nanoserver.
+#     ATTENTION : lastmile-executor:latest n'existe qu'en local pour l'instant.
+#     Pour que ce bloc soit vraiment applicable, il faudrait d'abord pousser
+#     l'image vers un registre accessible par Azure (ex: Azure Container Registry).
 resource "azurerm_container_group" "sandbox_docker" {
   name                = "aci-sandbox-executeur"
   resource_group_name = data.azurerm_resource_group.projet.name
   location            = data.azurerm_resource_group.projet.location
-  os_type             = "Windows"
+  os_type             = "Linux"
   restart_policy      = "Never"
 
   container {
     name   = "sandbox"
-    image  = "mcr.microsoft.com/windows/nanoserver:ltsc2022"
+    image  = "lastmile-executor:latest"
     cpu    = "2"
     memory = "4"
   }
