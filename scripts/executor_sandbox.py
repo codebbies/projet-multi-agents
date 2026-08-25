@@ -10,6 +10,7 @@ from autogen_ext.code_executors.docker import DockerCommandLineCodeExecutor
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 GOLD_DIR = PROJECT_ROOT / "data" / "gold"
+MODELS_DIR = PROJECT_ROOT / "models"
 WORK_DIR = PROJECT_ROOT / "scripts" / ".executor_work"
 
 
@@ -18,6 +19,7 @@ def get_executor() -> DockerCommandLineCodeExecutor:
 
     - image lastmile-executor:latest : Python + pandas/numpy, utilisateur non-root
     - data/gold monté en lecture seule : l'agent peut lire les données mais jamais les modifier
+    - models/ monté en lecture seule : modele de prediction pre-entraine (train_carbon_predictor.py)
     """
     WORK_DIR.mkdir(parents=True, exist_ok=True)
     return DockerCommandLineCodeExecutor(
@@ -26,5 +28,6 @@ def get_executor() -> DockerCommandLineCodeExecutor:
         timeout=60,
         extra_volumes={
             str(GOLD_DIR): {"bind": "/workspace/data", "mode": "ro"},
+            str(MODELS_DIR): {"bind": "/workspace/models", "mode": "ro"},
         },
     )

@@ -2,8 +2,9 @@
 
 Ecrit du code Python pour calculer l'empreinte carbone a partir des donnees
 gold montees dans la sandbox Docker (US 1.2), puis l'execute et recupere
-stdout/stderr. Pour l'instant : chemin "route connue" (lookup direct) uniquement.
-La prediction ML pour route nouvelle est hors scope de ce ticket (voir memoire projet).
+stdout/stderr. Gere 3 chemins : lookup direct (route connue), calcul
+deterministe (route nouvelle mais arrets connus), et prediction ML baseline
+(route nouvelle, arrets inconnus, cf. scripts/train_carbon_predictor.py).
 """
 from autogen_agentchat.agents import CodeExecutorAgent
 from autogen_core.code_executor import CodeExecutor
@@ -55,18 +56,40 @@ facteur_kg_co2e_km du vehicle_class de la route (dans dim_vehicle), sauf pour \
 la distance reelle ou tu dois utiliser directement emission_kg_co2e deja calcule \
 (plus precis que distance x facteur).
    - Donne le gain en % et en kg CO2e evitables.
-3. Distinction IMPORTANTE entre deux situations differentes, a ne jamais confondre :
-   a) Route absente de fact_route_leg (route_data.empty apres filtrage) -> affiche \
-"Route inconnue : prediction non disponible dans cette version", jamais de chiffre.
-   b) Route presente, mais un scenario vehicule (notamment electrique) affiche \
+3bis. Route nouvelle SANS arrets detailles connus (juste zone/station_code, \
+nb_stops, capacity_cm3, vehicle_class - typiquement au stade de planification, \
+avant d'avoir la liste exacte des arrets) : utiliser le modele de prediction \
+pre-entraine, PAS de lookup ni de calcul deterministe possible dans ce cas.
+   - Charger le modele : `import joblib; model = joblib.load('/workspace/models/carbon_predictor.pkl')`
+   - Charger la liste des colonnes attendues : \
+`import json; columns = json.load(open('/workspace/models/carbon_predictor_columns.json'))`
+   - Construire un DataFrame a une ligne avec station_code et vehicle_class \
+encodes en one-hot EXACTEMENT comme `columns` (toute colonne absente = 0), \
+plus nb_stops et capacity_cm3 en valeurs numeriques.
+   - Predire : `prediction = model.predict(X)[0]`
+   - IMPORTANT : toujours preciser que c'est une ESTIMATION (modele baseline \
+Random Forest, R2=0.51, MAE=2.26 kg CO2e sur le jeu de test - voir \
+/workspace/models/carbon_predictor_metrics.json), jamais presenter ce chiffre \
+comme aussi fiable qu'un calcul exact sur donnees reelles.
+4. Distinctions IMPORTANTES a ne jamais confondre :
+   a) Route absente de fact_route_leg ET aucun arret/caracteristique fourni dans \
+la demande -> affiche "Route inconnue : donnees insuffisantes pour toute estimation", \
+jamais de chiffre.
+   b) Route absente de fact_route_leg MAIS ses arrets sont fournis dans la \
+demande (lat/lng connus) -> calcul deterministe via distance_haversine_km x \
+facteur_kg_co2e_km (regle 4, pas de modele necessaire).
+   c) Route absente de fact_route_leg, arrets inconnus, mais caracteristiques de \
+planification fournies (zone, nb_stops, capacite, vehicule) -> utiliser le modele \
+de prediction (regle 3bis).
+   d) Route presente, mais un scenario vehicule (notamment electrique) affiche \
 legitimement 0.0 kg CO2e dans les donnees -> ce N'EST PAS une erreur ni une donnee \
 manquante, c'est une simplification connue du modele DEFRA (emissions "tank-to-wheel" \
 uniquement, sans compter la production d'electricite en amont). Affiche ce 0.0 \
 normalement, en precisant "(0.0 = simplification du modele, emissions de production \
 electrique non comptees)". Ne jamais transformer ce 0.0 legitime en "route inconnue".
-4. Affiche toujours un resultat final lisible avec print(), les valeurs en kg CO2e \
+5. Affiche toujours un resultat final lisible avec print(), les valeurs en kg CO2e \
 arrondies a 2 decimales (round(x, 2)).
-5. Une fois le resultat affiche avec succes, NE PRODUIS PLUS AUCUN bloc de code \
+6. Une fois le resultat affiche avec succes, NE PRODUIS PLUS AUCUN bloc de code \
 supplementaire. Reponds simplement par une phrase texte resumant le resultat obtenu.
 """
 

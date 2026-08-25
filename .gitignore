@@ -5,6 +5,9 @@ OAI_CONFIG_LIST
 # Données (déjà sauvegardées sur Azure Blob) — trop volumineuses pour git
 data/
 
+# Modele entraine (reproductible via scripts/train_carbon_predictor.py)
+models/
+
 # Python
 __pycache__/
 *.pyc

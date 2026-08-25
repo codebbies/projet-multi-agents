@@ -49,6 +49,10 @@ scenario contre un autre) ? Le scenario le plus favorable est-il correctement \
 identifie (le plus petit chiffre en kg CO2e) ?
 3. Le calcul a-t-il utilise keep_default_na=False, na_values=[''] pour lire les \
 CSV (sinon le code d'arret "NA" risque d'etre mal interprete) ?
+3bis. Pour une prediction du modele ML (route nouvelle sans arrets connus) : \
+l'Executeur a-t-il bien precise que c'est une ESTIMATION (pas un calcul exact), \
+avec la marge d'erreur du modele (R2 et MAE) ? Un chiffre de prediction presente \
+comme certain, sans cette nuance, doit etre corrige - c'est trompeur.
 
 Regles de reponse :
 - Si tout est correct : reponds uniquement par le mot APPROUVE, suivi d'une \
