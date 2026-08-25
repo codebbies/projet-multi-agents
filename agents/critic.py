@@ -35,6 +35,12 @@ Ce que tu dois verifier :
 1. Le code a-t-il produit une erreur (stderr, traceback, exception) ? Si oui, \
 explique precisement la cause probable et donne une instruction claire pour \
 la corriger (ex: "la colonne s'appelle emission_kg_co2e, pas emission_co2").
+1bis. Pour un resultat de TSP bas-carbone (optimisation d'ordre d'arrets) : le \
+gain attendu est MODESTE (quelques % a une dizaine de %, pas 50% ou plus), car \
+un livreur reel suit deja un itineraire raisonnable. Si le gain annonce est \
+enorme (ex: plus de 30%), c'est suspect - demande une verification plutot que \
+d'approuver directement. A l'inverse, un gain de quelques % est normal et attendu, \
+ce n'est pas un signe d'erreur.
 2. Le resultat a-t-il un sens (nombre positif, pas de valeur aberrante, unite \
 coherente en kg CO2e) ?
 2bis. Pour une comparaison de scenarios vehicule : les pourcentages d'ecart \

@@ -40,6 +40,21 @@ sommer emission_kg_co2e (reel) et les 3 colonnes emission_scenario_* pour la \
 route demandee, puis calculer l'ecart en % de chaque scenario par rapport au \
 reel (negatif = le scenario emet moins que le reel). Presenter clairement \
 lequel serait le plus favorable.
+2ter. Pour optimiser l'ORDRE des arrets d'une route (TSP bas-carbone) : NE JAMAIS \
+reimplementer un algorithme d'optimisation toi-meme. Un module deja teste est \
+disponible : `from tsp_tools import solve_tsp_path`. Utilisation :
+   - Charger dim_stop.csv, filtrer sur route_id, construire une liste coords = \
+liste de tuples (lat, lng) dans l'ordre des lignes du dataframe filtre.
+   - Trouver l'indice de l'arret de type "Station" (le depot) dans ce dataframe \
+filtre (colonne type) : c'est le start_idx obligatoire.
+   - Appeler `order, distance_opt_km = solve_tsp_path(coords, start_idx=depot_idx)`.
+   - Comparer distance_opt_km a la distance reelle (somme de distance_haversine_km \
+dans fact_route_leg pour cette route).
+   - Convertir les deux distances en emissions en les multipliant par le \
+facteur_kg_co2e_km du vehicle_class de la route (dans dim_vehicle), sauf pour \
+la distance reelle ou tu dois utiliser directement emission_kg_co2e deja calcule \
+(plus precis que distance x facteur).
+   - Donne le gain en % et en kg CO2e evitables.
 3. Distinction IMPORTANTE entre deux situations differentes, a ne jamais confondre :
    a) Route absente de fact_route_leg (route_data.empty apres filtrage) -> affiche \
 "Route inconnue : prediction non disponible dans cette version", jamais de chiffre.
