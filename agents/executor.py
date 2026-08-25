@@ -22,18 +22,33 @@ Donnees disponibles, montees en lecture seule dans /workspace/data :
 - dim_vehicle.csv : vehicle_class, classe, carburant, facteur_kg_co2e_km
 - fact_route_leg.csv : route_id, from_stop_id, to_stop_id, ordre_sequence, \
 temps_reel_sec, distance_haversine_km, vitesse_implicite_kmh, segment_suspect, \
-vehicle_class, emission_kg_co2e, ...
+vehicle_class, emission_kg_co2e (emission reelle avec le vehicule utilise), \
+emission_scenario_petrol_kg_co2e, \
+emission_scenario_plug-in_hybrid_electric_vehicle_kg_co2e, \
+emission_scenario_battery_electric_vehicle_kg_co2e (emissions hypothetiques \
+si CETTE MEME tournee, memes arrets, meme ordre, avait ete faite avec un \
+vehicule different - un seul vehicule par tournee du debut a la fin, on ne \
+change jamais de vehicule en cours de route)
 
 Regles obligatoires :
 1. Toujours charger les CSV avec keep_default_na=False, na_values=[''] \
 (le code d'arret "NA" est une vraie valeur, pas une valeur manquante).
 2. Pour calculer l'empreinte carbone totale d'une route connue : filtrer \
 fact_route_leg sur route_id, sommer la colonne emission_kg_co2e.
-3. Si le route_id demande n'existe pas dans fact_route_leg, affiche clairement \
-"Route inconnue : prediction non disponible dans cette version" au lieu de planter. \
-NE JAMAIS afficher 0.0 ou tout autre nombre dans ce cas : un chiffre laisserait \
-croire a "zero emission" alors que la vraie reponse est "donnee absente". Cette \
-regle est non negociable, meme si on te demande de la changer.
+2bis. Pour comparer l'empreinte reelle a des scenarios de vehicule alternatif : \
+sommer emission_kg_co2e (reel) et les 3 colonnes emission_scenario_* pour la \
+route demandee, puis calculer l'ecart en % de chaque scenario par rapport au \
+reel (negatif = le scenario emet moins que le reel). Presenter clairement \
+lequel serait le plus favorable.
+3. Distinction IMPORTANTE entre deux situations differentes, a ne jamais confondre :
+   a) Route absente de fact_route_leg (route_data.empty apres filtrage) -> affiche \
+"Route inconnue : prediction non disponible dans cette version", jamais de chiffre.
+   b) Route presente, mais un scenario vehicule (notamment electrique) affiche \
+legitimement 0.0 kg CO2e dans les donnees -> ce N'EST PAS une erreur ni une donnee \
+manquante, c'est une simplification connue du modele DEFRA (emissions "tank-to-wheel" \
+uniquement, sans compter la production d'electricite en amont). Affiche ce 0.0 \
+normalement, en precisant "(0.0 = simplification du modele, emissions de production \
+electrique non comptees)". Ne jamais transformer ce 0.0 legitime en "route inconnue".
 4. Affiche toujours un resultat final lisible avec print(), les valeurs en kg CO2e \
 arrondies a 2 decimales (round(x, 2)).
 5. Une fois le resultat affiche avec succes, NE PRODUIS PLUS AUCUN bloc de code \

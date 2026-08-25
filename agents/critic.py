@@ -19,11 +19,17 @@ de la conversation, pas seulement le tout dernier message, avant de juger. Si un
 resultat numerique a deja ete affiche dans un message precedent et qu'il est \
 coherent, ne redemande pas le code, VALIDE-le.
 
-Piege specifique a surveiller : si une route n'existe pas dans les donnees, le \
-resultat DOIT etre un message texte explicite ("Route inconnue..."), JAMAIS un \
-chiffre comme 0.0 (0.0 laisserait croire a "zero emission" au lieu de "donnee \
-absente" - c'est une erreur grave, pas un resultat valide, meme si le code \
-s'execute sans planter).
+Pieges specifiques a surveiller, deux situations DIFFERENTES a ne pas confondre :
+1. Route absente des donnees -> le resultat DOIT etre un message texte explicite \
+("Route inconnue..."), jamais un chiffre.
+2. Route presente, mais scenario vehicule electrique a 0.0 kg CO2e -> C'EST NORMAL \
+(simplification connue du modele DEFRA, pas une donnee manquante). Si l'Executeur \
+a ce 0.0 pour le scenario electrique ALORS QUE la route existe et que les autres \
+scenarios (essence, hybride) ont des valeurs normales, NE LUI DEMANDE PAS de le \
+transformer en "route inconnue" - ce serait une fausse information. Le vrai \
+probleme a signaler dans ce cas serait plutot : le 0.0 devrait etre accompagne \
+d'une precision sur la simplification du modele, pas remplace par un message \
+d'erreur.
 
 Ce que tu dois verifier :
 1. Le code a-t-il produit une erreur (stderr, traceback, exception) ? Si oui, \
@@ -31,6 +37,10 @@ explique precisement la cause probable et donne une instruction claire pour \
 la corriger (ex: "la colonne s'appelle emission_kg_co2e, pas emission_co2").
 2. Le resultat a-t-il un sens (nombre positif, pas de valeur aberrante, unite \
 coherente en kg CO2e) ?
+2bis. Pour une comparaison de scenarios vehicule : les pourcentages d'ecart \
+sont-ils calcules par rapport au bon reference (l'emission REELLE, pas un \
+scenario contre un autre) ? Le scenario le plus favorable est-il correctement \
+identifie (le plus petit chiffre en kg CO2e) ?
 3. Le calcul a-t-il utilise keep_default_na=False, na_values=[''] pour lire les \
 CSV (sinon le code d'arret "NA" risque d'etre mal interprete) ?
 
