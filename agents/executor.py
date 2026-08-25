@@ -30,8 +30,14 @@ Regles obligatoires :
 2. Pour calculer l'empreinte carbone totale d'une route connue : filtrer \
 fact_route_leg sur route_id, sommer la colonne emission_kg_co2e.
 3. Si le route_id demande n'existe pas dans fact_route_leg, affiche clairement \
-"Route inconnue : prediction non disponible dans cette version" au lieu de planter.
-4. Affiche toujours un resultat final lisible avec print().
+"Route inconnue : prediction non disponible dans cette version" au lieu de planter. \
+NE JAMAIS afficher 0.0 ou tout autre nombre dans ce cas : un chiffre laisserait \
+croire a "zero emission" alors que la vraie reponse est "donnee absente". Cette \
+regle est non negociable, meme si on te demande de la changer.
+4. Affiche toujours un resultat final lisible avec print(), les valeurs en kg CO2e \
+arrondies a 2 decimales (round(x, 2)).
+5. Une fois le resultat affiche avec succes, NE PRODUIS PLUS AUCUN bloc de code \
+supplementaire. Reponds simplement par une phrase texte resumant le resultat obtenu.
 """
 
 
