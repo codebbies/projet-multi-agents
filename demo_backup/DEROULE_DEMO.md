@@ -58,13 +58,24 @@ l'historique, un modèle Random Forest entraîné en local estime l'empreinte.
 R² de 0.51 — un baseline honnête, pas un modèle miracle, assumé comme tel
 par le système lui-même."
 
-## 5. (Optionnel, si le temps permet) Sécurité de la sandbox
+## 5. Sécurité de la sandbox — écriture bloquée
 
 ```bash
 cd ..
 docker run --rm -v "${PWD}\data\gold:/workspace/data:ro" lastmile-executor:latest python3 -c "open('/workspace/data/test.txt','w').write('x')"
 ```
 Doit afficher `Read-only file system`. Preuve visuelle forte et rapide.
+
+## 6. Sécurité de la sandbox — réseau coupé
+
+```bash
+docker run --rm --network none -v "${PWD}\data\gold:/workspace/data:ro" lastmile-executor:latest python3 -c "import urllib.request; urllib.request.urlopen('http://example.com', timeout=5)"
+```
+Doit afficher `Temporary failure in name resolution`.
+
+**Ce qu'il faut dire** : "Le code généré par le LLM ne peut ni modifier les
+données, ni faire sortir la moindre donnée vers l'extérieur — deux couches
+d'isolation testées et prouvées, pas juste affirmées."
 
 ---
 
