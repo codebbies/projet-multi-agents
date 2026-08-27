@@ -3,56 +3,65 @@ C:\Users\ASUS\Documents\projet_multi_agents\agents\executor.py:101: UserWarning:
 ============================================================
 PLAN DU PLANIFICATEUR
 ============================================================
-1. Identifier la route concernée en utilisant l'ID RouteID_01c30168-2365-46a5-a1c0-60cfafe18c6f.
-2. Demander à l'Executeur de calculer l'empreinte carbone du van diesel utilisé sur cette route.
-3. Définir une liste d'autres types de véhicules pertinents pour cette tournée (par exemple électrique, hybride, gaz naturel).
-4. Demander à l'Executeur d'estimer les émissions pour cette même route avec chacun des autres types de véhicules.
-5. Demander au Critique de comparer les résultats d'empreintes carbone entre le van diesel et les autres types de véhicules.
-6. Demander au Critique de valider si un autre type de véhicule aurait permis de réduire les émissions sur cette route.
+1. Identifier la route concernée avec l'ID RouteID_01c30168-2365-46a5-a1c0-60cfafe18c6f.
+2. Récupérer les données d'empreinte carbone pour cette route avec le véhicule diesel actuellement utilisé.
+3. Lister les types de véhicules alternatifs pertinents pour la même tournée (ex: électrique, hybride, gaz).
+4. Pour chaque type de véhicule alternatif, demander à l'Executeur de calculer l'empreinte carbone possible sur cette même route.
+5. Compiler les résultats des émissions pour le van diesel et les alternatives.
+6. Confier au Critique la validation des calculs d'émissions et la comparaison entre le van diesel et les autres types de véhicules pour évaluer les gains potentiels d'émissions.
 
 ============================================================
 ECHANGE EXECUTEUR <-> CRITIQUE
 ============================================================
 [user] Voici le plan a suivre :
-1. Identifier la route concernée en utilisant l'ID RouteID_01c30168-2365-46a5-a1c0-60cfafe18c6f.
-2. Demander à l'Executeur de calculer l'empreinte carbone du van diesel utilisé sur cette route.
-3. Définir une liste d'autres types de véhicules pertinents pour cette tournée (par exemple électrique, hybride, gaz naturel).
-4. Demander à l'Executeur d'estimer les émissions pour cette même route avec chacun des autres types de véhicules.
-5. Demander au Critique de comparer les résultats d'empreintes carbone entre le van diesel et les autres types de véhicules.
-6. Demander au
+1. Identifier la route concernée avec l'ID RouteID_01c30168-2365-46a5-a1c0-60cfafe18c6f.
+2. Récupérer les données d'empreinte carbone pour cette route avec le véhicule diesel actuellement utilisé.
+3. Lister les types de véhicules alternatifs pertinents pour la même tournée (ex: électrique, hybride, gaz).
+4. Pour chaque type de véhicule alternatif, demander à l'Executeur de calculer l'empreinte carbone possible sur cette même route.
+5. Compiler les résultats des émissions pour le van diesel et les alternatives.
+6. Confier au Critique la validation des calculs d'émission
 
 [Executeur] ```python
 import pandas as pd
 
-route_id = "RouteID_01c30168-2365-46a5-a1c0-60cfafe18c6f"
+# Regle 1 : charger avec keep_default_na=False, na_values=['']
+fact_route_leg = pd.read_csv('/workspace/data/fact_route_leg.csv', keep_default_na=False, na_values=[''])
+dim_vehicle = pd.read_csv('/workspace/data/dim_vehicle.csv', keep_default_na=False, na_values=[''])
 
-# Chargement des données avec les paramètres recommandés
-dim_vehicle = pd.read_csv("/workspace/data/dim_vehicle.csv", keep_default_na=False, na_values=[""])
-fact_route_leg = pd.read_csv("/workspace/data/fact_route_leg.csv", keep_default_na=False, na_values=[""])
+route_id = 'RouteID_01c30168-2365-46a5-a1c0-60cfafe18c6f'
 
-# Filtrer fact_route_leg sur la route demandée
-route_legs = fact_route_leg[fact_route_leg["route_id"] == route_id]
+# Filtrer fact_route_leg sur route_id
+route_legs = fact_route_leg[fact_route_leg['route_id'] == route_id]
 
 if route_legs.empty:
     print("Route inconnue : donnees insuffisantes pour toute estimation")
 else:
-    # Empreinte carbone réell
+    # Calcul de l'empreinte carb
 
-[Executeur] Empreinte carbone réelle (Diesel) : 21.18 kg CO2e
-Scénario Essence : 25.04 kg CO2e (Écart 18.24%)
-Scénario Hybride rechargeable : 11.45 kg CO2e (Écart -45.94%)
-Scénario Electrique : 0.0 kg CO2e (Écart -100.0%) (0.0 = simplification du modele, emissions de production electrique non comptees)
-Le scénario le plus favorable est 'Electrique' avec une réduction de 100.0% des émissions par rapport au diesel.
+[Executeur] Empreinte carbone totale pour la route RouteID_01c30168-2365-46a5-a1c0-60cfafe18c6f :
+ - Diesel (réel) : 21.18 kg CO2e
+ - Essence (scénario) : 25.04 kg CO2e
+ - Hybride rechargeable (scénario) : 11.45 kg CO2e
+ - Électrique (scénario) : 0.0 kg CO2e (0.0 = simplification du modele, emissions de production electrique non comptees)
 
+Écarts en % par rapport au Diesel réel (négatif = émet moins) :
+ - Essence (scénario) : 18.24 %
+ - Hybride rechargeable (scénario) : -45.94 %
+ - Électrique (scénario) : -100.0 %
 
-[Executeur] Pour la route RouteID_01c30168-2365-46a5-a1c0-60cfafe18c6f, le véhicule électrique serait le plus favorable avec une réduction de 100% des émissions de CO2e par rapport au van diesel réel, suivi par l'hybride rechargeable avec une réduction d'environ 46%.
+Le scénario le plus favorable est : Électrique (scénario)
+Gain estimé : 100.0 % soit 21.18 
 
-[Critique] Le résultat fournit un gain de 100% pour le véhicule électrique, ce qui est cohérent avec la simplification connue du modèle DEFRA (émissions de 0.0 kg CO2e pour les véhicules électriques sur des routes existantes). La réduction de 46% pour l'hybride rechargeable semble raisonnable, ce qui est typique pour un scénario hybride par rapport au diesel.
+[Executeur] Le scénario électrique est le plus favorable pour cette tournée, permettant un gain estimé de 100% soit 21.18 kg CO2e évités comparé au véhicule diesel actuel, en tenant compte que les émissions de production électrique ne sont pas comptées dans ce modèle.
 
-Cependant, il manque les valeurs exactes des émissions en kg CO2e pour le diesel réel et les autres véhicules, ce qui est nécessaire pour valider pleinement le calcul et pour confirmer que le pourcentage de réduction est bien calculé par rapport au
+[Critique] Le gain annoncé de 100% pour le scénario électrique est suspect, surtout s'il correspond exactement à la valeur des émissions du véhicule diesel actuel (21.18 kg CO2e). C'est une simplification connue du modèle DEFRA que les émissions du véhicule électrique soient à 0.0 kg CO2e, mais elle doit être explicitement mentionnée. Le message doit préciser que ce chiffre zéro ne tient pas compte des émissions indirectes (production de l'électricité). 
 
-[Executeur] L'analyse a bien été faite sur la route présente dans les données, avec affichage des émissions en kg CO2e arrondies à 2 décimales pour tous les scénarios (diesel, essence, hybride rechargeable, électrique). Les pourcentages de réduction sont calculés par rapport à l'empreinte réelle du van diesel enregistré sur cette route. Le résultat est cohérent avec le modèle DEFRA et conforme aux règles de calcul définies.
+Il faut aussi vérifier que les émissions pour les scénarios essence et hybride rechargeable ont bien été calculées et comparées. Si elles n'ont pas été
 
-[Critique] APPROUVE. L'Executeur a confirmé que la route existe, que les valeurs d'émissions en kg CO2e ont été affichées pour tous les scénarios, et que les pourcentages de réduction sont calculés par rapport à l'empreinte réelle du van diesel. Le gain de 100% pour le véhicule électrique est cohérent avec le modèle DEFRA et le gain modéré pour l'hybride est réaliste, validant ainsi le calcul.
+[Executeur] Le résultat précédent présente bien les valeurs numériques des émissions pour les 4 scénarios (diesel réel, essence, hybride rechargeable, électrique). Le zéro en électrique est bien précisé comme une simplification du modèle DEFRA, avec mention explicite que cela n'inclut pas la production d'électricité. La comparaison et les écarts sont calculés systématiquement par rapport au diesel réel.  
+
+Ainsi les valeurs sont cohérentes et les recommandations du critique ont été prises en compte dans l’affichage initial. Le scénario électrique reste le plus favorable dans cette estimation, avec la rése
+
+[Critique] APPROUVE. Le résultat est cohérent avec la simplification connue du modèle DEFRA pour les véhicules électriques, le zéro est bien expliqué, les comparaisons sont faites par rapport au diesel réel, et les valeurs numériques des autres scénarios sont fournies. Les réserves sur la production électrique sont clairement indiquées, ce qui rend l'analyse fiable.
 
 OK : pipeline complet Planificateur -> Executeur -> Critique valide.

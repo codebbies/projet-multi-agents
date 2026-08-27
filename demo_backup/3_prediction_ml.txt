@@ -3,49 +3,57 @@ C:\Users\ASUS\Documents\projet_multi_agents\agents\executor.py:101: UserWarning:
 ============================================================
 PLAN DU PLANIFICATEUR
 ============================================================
-1. Identifier les paramètres de la tournée à estimer : zone DLA7, environ 150 arrêts, capacité 4 247 923 cm3, véhicule van diesel.
-2. Collecter les données historiques et moyennes des tournées similaires dans la zone DLA7 pour des véhicules diesel avec une capacité comparable.
-3. Demander à l'Executeur d'utiliser ces données historiques pour prédire une estimation de l'empreinte carbone de la tournée nouvelle, en tenant compte du nombre approximatif d'arrêts et de la capacité du van.
-4. Demander au Critique de valider cette estimation en la comparant à des scénarios optimisés ou à d'autres tournées similaires et pertinentes.
+1. Recueillir les informations générales sur la tournée : zone DLA7, nombre d'arrêts approximatif (150), capacité du véhicule (4247923 cm3), type de véhicule (van diesel).
+2. Vérifier si des données historiques ou moyennes sont disponibles pour des tournées similaires dans la zone DLA7 avec des caractéristiques proches.
+3. Demander à l'Executeur d'estimer l'empreinte carbone basée sur ces données moyennes ou modèles prédictifs adaptés à une tournée nouvelle sans détail exact des arrêts.
+4. Fournir à l'Executeur les paramètres généraux (zone, nombre d'arrêts estimé, capacité, type de van) pour affiner l'estimation des émissions.
+5. Demander au Critique de valider cette estimation en la comparant à des tournées historiques similaires ou à des scénarios optimisés dans la même zone.
 
 ============================================================
 ECHANGE EXECUTEUR <-> CRITIQUE
 ============================================================
 [user] Voici le plan a suivre :
-1. Identifier les paramètres de la tournée à estimer : zone DLA7, environ 150 arrêts, capacité 4 247 923 cm3, véhicule van diesel.
-2. Collecter les données historiques et moyennes des tournées similaires dans la zone DLA7 pour des véhicules diesel avec une capacité comparable.
-3. Demander à l'Executeur d'utiliser ces données historiques pour prédire une estimation de l'empreinte carbone de la tournée nouvelle, en tenant compte du nombre approximatif d'arrêts et de la capacité du van.
-4. Demander au Critique de valider cette estimation en la comparant à des scénarios optimisés ou à d'autres tournées similaires et pertinentes.
-
-Caracteristiques de la nouvelle tournee (
+1. Recueillir les informations générales sur la tournée : zone DLA7, nombre d'arrêts approximatif (150), capacité du véhicule (4247923 cm3), type de véhicule (van diesel).
+2. Vérifier si des données historiques ou moyennes sont disponibles pour des tournées similaires dans la zone DLA7 avec des caractéristiques proches.
+3. Demander à l'Executeur d'estimer l'empreinte carbone basée sur ces données moyennes ou modèles prédictifs adaptés à une tournée nouvelle sans détail exact des arrêts.
+4. Fournir à l'Executeur les paramètres généraux (zone, nombre d'arrêts estimé, capacité, type de van) pour affiner l'estimation des émissions.
+5. Demander au Critique de valider cett
 
 [Executeur] ```python
 import pandas as pd
 import joblib
 import json
 
-# Charger le modèle et les colonnes attendues
+# Chargement du modele et des colonnes
 model = joblib.load('/workspace/models/carbon_predictor.pkl')
 columns = json.load(open('/workspace/models/carbon_predictor_columns.json'))
 
-# Construction du DataFrame avec la ligne unique selon les colonnes attendues
-# On encode station_code et vehicle_class en one-hot, on complète le reste des colonnes à 0,
-# puis on remplit nb_stops et capacity_cm3
+# Construction du DataFrame d'entrée pour prediction
+data = {
+    'station_code': 'DLA7',
+    'vehicle_class': 'van_class3_diesel',
+    'nb_stops': 150,
+    'capacity_cm3': 4247923
+}
 
-# Initialiser un dict avec toutes les colonnes à 0
-data_dict = dict.fromkeys(columns, 0)
+# On construit un dict initialisé à 0 pour toutes les colonnes
+X_dict = dict.fromkeys(columns, 0)
 
-# renseigner les one-hot pour station_code et vehicle_class
-station_col = f'station_code_{ "DLA7" }'
-vehicle_col = f'vehicle_class_{ "van_class3_diesel"
+# One-hot encode station_code
+col_station = f'station_code_{data["station_code"]}'
+if col_station in X_dict:
+    X_dict[col_station] = 1
 
-[Executeur] Estimation de l'empreinte carbone totale pour la nouvelle tournée (station_code=DLA7, nb_stops=150, capacity_cm3=4247923, vehicle_class=van_class3_diesel) : 16.9 kg CO2e
+# One-hot encode vehicle_class
+col_vehicle 
 
-Note : Il s'agit d'une estimation basée sur un modèle Random Forest (R2=0.51, MAE=2.26 kg CO2e), moins précise qu'un calcul exact sur données réelles.
+[Executeur] Estimation de l'empreinte carbone totale pour la nouvelle tournée (station_code=DLA7, nb_stops=150, capacity_cm3=4247923, vehicle_class=van_class3_diesel): 16.9 kg CO2e
+
+Note : Il s'agit d'une ESTIMATION basée sur un modèle baseline Random Forest (R2=0.51, MAE=2.26 kg CO2e), car aucune donnée détaillée d'arrêts n'est disponible. Ce chiffre est moins fiable qu'un calcul exact.
 
 
-[Executeur] L'estimation de l'empreinte carbone pour la nouvelle tournée avec les caractéristiques fournies est d'environ 16.9 kg CO2e, calculée à partir d'un modèle prédictif de type Random Forest. Cette valeur doit être considérée comme une estimation indicative.
+[Executeur] L'estimation de l'empreinte carbone pour la nouvelle tournée DLA7 avec 150 arrêts et un van diesel de capacité 4247923 cm3 est d'environ 16.9 kg CO2e, basée sur un modèle prédictif avec une précision modérée.
 
-[Critique] APPROUVE, l'estimation est une valeur numérique plausible pour l'empreinte carbone d'une tournée de livraison avec un van diesel, et elle est clairement présentée comme une approximation issue d'un modèle prédictif. Le message respecte la bonne pratique d'indiquer que c'est une estimation, conformément au plan demandé.
+[Critique] APPROUVE. L'estimation de 16.9 kg CO2e est plausible pour une tournée de 150 arrêts en van diesel de cette capacité, et l'usage d'un modèle prédictif avec une précision modérée est approprié pour une tournée sans arrêts connus.
 
 OK : prediction ML validee par le pipeline complet.
