@@ -204,7 +204,10 @@ def main() -> None:
 
         with st.expander("Methodologie et valeur ajoutee"):
             st.markdown(
-                "**Facteurs d'emission.** DEFRA (UK Department for "
+                "**Sources de donnees.** Amazon Last-Mile Routing Research "
+                "Challenge (routes, sequences d'arrets, temps de trajet "
+                "reels - 1000 tournees, 5 metropoles US, 2018) croise avec "
+                "les facteurs d'emission DEFRA (UK Department for "
                 "Environment), reference standard pour le reporting GHG "
                 "Protocol Scope 1-3.\n\n"
                 "**Deux niveaux de valeur.**\n\n"
@@ -239,10 +242,11 @@ def main() -> None:
     )
     st.markdown(
         "**Objectif** : mesurer l'empreinte carbone de chaque tournée à "
-        "partir des facteurs d'émission DEFRA (référence utilisée pour le "
-        "reporting GHG Protocol Scope 1-3, CSRD), et permettre l'interrogation "
-        "du système en langage naturel plutôt que par une interface figée. "
-        "Méthodologie détaillée dans la sidebar."
+        "partir de données de routes réelles (Amazon Last-Mile Routing "
+        "Research Challenge) et des facteurs d'émission DEFRA (référence "
+        "pour le reporting GHG Protocol Scope 1-3, CSRD), et permettre "
+        "l'interrogation du système en langage naturel plutôt que par une "
+        "interface figée. Méthodologie détaillée dans la sidebar."
     )
 
     requete = st.text_area(
