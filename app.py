@@ -75,6 +75,20 @@ def detecter_levier(messages: list[dict]) -> tuple[str, str]:
     pour indiquer quel levier de calcul a probablement ete utilise.
     Best-effort, pas garanti."""
     t = " ".join(m["content"] for m in messages).lower()
+    # Priorite 1 : absence de donnees - toujours verifie en premier, la
+    # formulation du LLM varie (pas toujours le mot-cle exact "route inconnue"
+    # du prompt), donc plusieurs tournures sont couvertes.
+    signaux_absence = [
+        "route inconnue",
+        "n'est pas presente dans les donnees",
+        "n'est pas présente dans les données",
+        "pas presente dans les donnees",
+        "aucune information suffisante",
+        "donnees insuffisantes",
+        "données insuffisantes",
+    ]
+    if any(s in t for s in signaux_absence):
+        return "Route inconnue", "red"
     # Ordre important : criteres les plus specifiques d'abord, "estimation"
     # seul est trop generique (utilise aussi dans d'autres leviers).
     if "tsp" in t or "ordre optimis" in t or "reordonn" in t:
@@ -83,8 +97,6 @@ def detecter_levier(messages: list[dict]) -> tuple[str, str]:
         return "Substitution vehicule (calcul exact)", "green"
     if "random forest" in t or "carbon_predictor" in t or "r2=" in t or "r²=" in t:
         return "Prediction ML (estimation)", "orange"
-    if "route inconnue" in t:
-        return "Route inconnue", "red"
     return "Calcul direct (lookup, exact)", "green"
 
 
