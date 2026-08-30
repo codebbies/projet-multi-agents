@@ -241,6 +241,16 @@ def main() -> None:
         "Amazon Last-Mile. Le code genere par le LLM s'execute dans une "
         "sandbox Docker isolee."
     )
+    st.markdown(
+        "> 📋 **A quoi ça sert, concrètement ?** Mesurer précisément "
+        "l'empreinte carbone de chaque tournée réelle pour le **reporting "
+        "réglementaire** (CSRD, Scope 3), avec les facteurs d'émission "
+        "**DEFRA** — la référence standard du secteur, pas des chiffres "
+        "inventés. Poser n'importe quelle question **en langage naturel** "
+        "(pas besoin de coder une fonction par cas d'usage), avec une "
+        "vérification indépendante avant de sortir un chiffre. *Détail "
+        "complet dans « Méthodologie et valeur ajoutée » →*"
+    )
 
     requete = st.text_area(
         "Votre demande",
