@@ -16,3 +16,4 @@ numpy==2.5.2
 scikit-learn==1.8.0
 joblib==1.5.3
 docker==7.2.0
+streamlit==1.58.0

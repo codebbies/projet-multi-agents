@@ -91,6 +91,18 @@ Non versionné (reproductible), à entraîner une fois :
 python scripts/train_carbon_predictor.py
 ```
 
+## Lancer l'interface
+
+Docker Desktop doit être ouvert. Depuis la racine du projet :
+
+```bash
+streamlit run app.py
+```
+
+Ouvre `http://localhost:8501`. Palette verte, sandbox Docker toujours active
+(non désactivable), suivi tokens/coût en direct, badge indiquant quel levier
+de calcul a été utilisé (lookup exact / TSP exact / prédiction ML).
+
 ## Lancer les tests
 
 Docker Desktop doit être ouvert. Depuis `scripts/` :
