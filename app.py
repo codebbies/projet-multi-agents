@@ -33,21 +33,40 @@ from scripts.executor_sandbox import get_executor
 PRIX_INPUT_PAR_1M = 0.40
 PRIX_OUTPUT_PAR_1M = 1.60
 
-EXEMPLES = {
-    "Substitution vehicule": (
-        "Le van diesel de la route RouteID_01c30168-2365-46a5-a1c0-60cfafe18c6f "
-        "aurait-il pu emettre moins avec un autre type de vehicule ?"
-    ),
-    "TSP bas-carbone": (
-        "Le livreur de la route RouteID_01c30168-2365-46a5-a1c0-60cfafe18c6f "
-        "a-t-il suivi l'ordre d'arrets le plus efficace ?"
-    ),
-    "Prediction ML (route nouvelle)": (
-        "On planifie une nouvelle tournee, pas encore dans l'historique : "
-        "zone DLA7, environ 150 arrets, capacite 4247923 cm3, van diesel. "
-        "Quelle empreinte carbone peut-on estimer ?"
-    ),
+# 5 routes reelles verifiees dans data/gold, choisies pour couvrir la variete
+# reelle du dataset (38 a 222 arrets, 4 zones differentes) - eviter de ne
+# montrer qu'UNE SEULE route dans toute la demo, ce qui ferait croire a tort
+# que le systeme est cable en dur sur un cas unique.
+ROUTES_REFERENCE = {
+    "Route courte - 38 arrets (zone DBO1)": "RouteID_04189f85-13a6-47b8-a78e-ec5688be0819",
+    "Route moyenne - 130 arrets (zone DLA7)": "RouteID_11ff0b06-87ec-4755-a731-2a2c3dfd45a4",
+    "Route moyenne - 151 arrets (zone DLA7)": "RouteID_0df605eb-a6e2-4f8a-ac76-b4f8b74ac68e",
+    "Route longue - 170 arrets (zone DCH4)": "RouteID_1364e982-c768-4248-818f-cefad0f4b136",
+    "Route tres longue - 222 arrets (zone DBO3)": "RouteID_06c23b69-370a-4a37-a941-8a3e177b1914",
 }
+
+# Toutes les vraies routes du dataset utilisent le meme vehicule reel
+# (van_class3_diesel) - verifie sur les 1000 routes. Les autres vehicules
+# n'existent que comme scenarios hypothetiques (colonnes emission_scenario_*).
+
+
+def requete_substitution_vehicule(route_id: str) -> str:
+    return f"Le van diesel de la route {route_id} aurait-il pu emettre moins avec un autre type de vehicule ?"
+
+
+def requete_tsp(route_id: str) -> str:
+    return f"Le livreur de la route {route_id} a-t-il suivi l'ordre d'arrets le plus efficace ?"
+
+
+def requete_lookup(route_id: str) -> str:
+    return f"Quelle est l'empreinte carbone de la route {route_id} ?"
+
+
+REQUETE_ML_TYPE = (
+    "On planifie une nouvelle tournee, pas encore dans l'historique : "
+    "zone DLA7, environ 150 arrets, capacite 4247923 cm3, van diesel. "
+    "Quelle empreinte carbone peut-on estimer ?"
+)
 
 
 def detecter_levier(messages: list[dict]) -> tuple[str, str]:
@@ -111,7 +130,12 @@ async def executer_pipeline(requete: str, conteneur_status) -> dict:
             if source and content and isinstance(content, str) and source != "user":
                 messages_log.append({"source": source, "content": content})
                 dernier_texte = content
-                if source == "Executeur":
+                # Ne retenir que les messages "prose" de l'Executeur comme
+                # resultat principal - un bloc de code brut n'est pas un
+                # resultat lisible, meme si c'est techniquement son dernier
+                # message (arrive quand le Critique approuve juste apres
+                # le code, avant que l'Executeur resume en langage naturel).
+                if source == "Executeur" and not content.strip().startswith("```"):
                     dernier_texte_executeur = content
                 if "APPROUVE" in content:
                     approuve = True
@@ -144,6 +168,8 @@ def main() -> None:
         st.session_state.historique = []
     if "requete_actuelle" not in st.session_state:
         st.session_state.requete_actuelle = ""
+    if "route_choisie" not in st.session_state:
+        st.session_state.route_choisie = list(ROUTES_REFERENCE.keys())[0]
 
     with st.sidebar:
         st.markdown("### 🌱 Pipeline Carbone Last-Mile")
@@ -152,10 +178,44 @@ def main() -> None:
         st.markdown("**Sandbox Docker**")
         st.success("🔒 Toujours active — lecture seule + reseau coupe (non desactivable)")
 
-        st.markdown("**Exemples de requetes**")
-        for label, texte in EXEMPLES.items():
-            if st.button(label, use_container_width=True):
-                st.session_state.requete_actuelle = texte
+        st.markdown("**Route de reference**")
+        st.session_state.route_choisie = st.selectbox(
+            "Choisir une route reelle du dataset",
+            options=list(ROUTES_REFERENCE.keys()),
+            index=list(ROUTES_REFERENCE.keys()).index(st.session_state.route_choisie),
+            label_visibility="collapsed",
+        )
+        route_id = ROUTES_REFERENCE[st.session_state.route_choisie]
+        st.caption(f"`{route_id}`")
+
+        st.markdown("**Leviers de calcul (sur la route choisie)**")
+        if st.button("Substitution vehicule", use_container_width=True):
+            st.session_state.requete_actuelle = requete_substitution_vehicule(route_id)
+        if st.button("TSP bas-carbone", use_container_width=True):
+            st.session_state.requete_actuelle = requete_tsp(route_id)
+        if st.button("Calcul direct (lookup)", use_container_width=True):
+            st.session_state.requete_actuelle = requete_lookup(route_id)
+        if st.button("Prediction ML (route nouvelle)", use_container_width=True):
+            st.session_state.requete_actuelle = REQUETE_ML_TYPE
+
+        if st.button("↺ Reinitialiser", use_container_width=True):
+            st.session_state.requete_actuelle = ""
+            st.rerun()
+
+        with st.expander("Methodologie et valeur ajoutee"):
+            st.markdown(
+                "**Pourquoi 3 agents plutot qu'un script ?** Pour un calcul "
+                "fixe, un script pandas suffirait. La valeur vient de la "
+                "gestion de requetes en langage naturel non prevues a "
+                "l'avance, d'une verification independante (Critique), et "
+                "de la separation des responsabilites pour la securite.\n\n"
+                "**Limite honnete du levier TSP** : un seul vehicule fait "
+                "toute la tournee, donc son facteur d'emission est constant "
+                "- optimiser la distance revient a optimiser le carbone "
+                "dans une marge mecaniquement limitee (~6% observe). Le "
+                "levier substitution vehicule (jusqu'a -46%) est plus "
+                "impactant, independamment de l'itineraire."
+            )
 
         if st.session_state.historique:
             st.markdown("**Historique de la session**")
@@ -222,12 +282,19 @@ def main() -> None:
             + resultat["tokens_completion"] / 1_000_000 * PRIX_OUTPUT_PAR_1M
         )
         c1, c2, c3 = st.columns(3)
-        c1.metric("Tokens utilises", f"{total_tokens:,}".replace(",", " "))
+        c1.metric(
+            "Tokens utilises",
+            f"{total_tokens:,}".replace(",", " "),
+            help=f"{resultat['tokens_prompt']:,} en entree + {resultat['tokens_completion']:,} en sortie".replace(",", " "),
+        )
         c2.metric("Cout estime", f"${cout_estime:.4f}")
         c3.metric("Messages echanges", len(resultat["messages"]))
         st.caption(
-            "Cout estime a titre indicatif (tarifs publics gpt-4.1-mini), "
-            "les tarifs Azure reels dependent du contrat."
+            "Cout estime a titre indicatif : tarifs publics gpt-4.1-mini "
+            f"(entree ${PRIX_INPUT_PAR_1M}/1M, sortie ${PRIX_OUTPUT_PAR_1M}/1M tokens - "
+            "la sortie coute plus cher que l'entree, d'ou des couts qui ne sont "
+            "pas strictement proportionnels au nombre total de tokens). "
+            "Les tarifs Azure reels dependent du contrat."
         )
 
         with st.expander("Plan du Planificateur"):
