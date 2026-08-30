@@ -27,3 +27,6 @@ infra/**/.terraform.lock.hcl
 .DS_Store
 Thumbs.db
 scripts/.executor_work/
+
+# Config locale d'outils de dev (specifique a cette machine)
+.claude/
