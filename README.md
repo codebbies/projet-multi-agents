@@ -30,6 +30,29 @@ rapport de stage).
 | TSP bas-carbone (réordonnancement des arrêts) | -6.11% | Calcul exact, algo testé séparément (`docker/executor/tsp_tools.py`) |
 | Prédiction ML (route nouvelle, arrêts inconnus) | ~16.9 kg CO2e | Estimation (Random Forest, R²=0.51) |
 
+Facteurs d'émission : **DEFRA** (UK Department for Environment) — référence
+standard utilisée mondialement pour le reporting GHG Protocol (Scope 1-3),
+pas des chiffres inventés pour ce projet.
+
+### Deux valeurs distinctes, à ne pas confondre
+
+- **Déclarative (la priorité réelle)** — mesurer précisément l'empreinte de
+  chaque tournée réelle pour le reporting réglementaire (CSRD, Scope 3).
+  Utile même sans jamais rien changer aux opérations, comme un logiciel de
+  comptabilité : sa valeur n'est pas d'optimiser, c'est de produire des
+  chiffres exacts et défendables.
+- **Opérationnelle (les 3 leviers ci-dessus)** — plus fragile. Le TSP
+  optimise une marge mécaniquement limitée (véhicule fixe = facteur constant
+  sur toute la tournée). La substitution de véhicule (jusqu'à -46%) suppose
+  un renouvellement de flotte — décision réelle en logistique, mais à
+  horizon de plusieurs années, pas un gain immédiat.
+
+La valeur du système **multi-agents** (par opposition au projet carbone en
+général) est dans l'interface de requête : poser n'importe quelle question
+en langage naturel sans coder une fonction par cas d'usage, avec une
+vérification indépendante (Critique) avant de sortir un chiffre — pas dans
+la difficulté du calcul lui-même.
+
 ## Prérequis
 
 - Python 3.12+
