@@ -204,28 +204,24 @@ def main() -> None:
 
         with st.expander("Methodologie et valeur ajoutee"):
             st.markdown(
-                "**Facteurs d'emission** : DEFRA (UK Department for "
-                "Environment) - reference standard utilisee mondialement "
-                "pour le reporting GHG Protocol (Scope 1-3), pas des "
-                "chiffres invente pour ce projet.\n\n"
-                "**Deux valeurs distinctes, a ne pas confondre :**\n\n"
-                "- *Declarative (la priorite reelle)* : mesurer precisement "
-                "l'empreinte de chaque tournee reelle pour le reporting "
-                "reglementaire (CSRD, Scope 3) - utile meme sans jamais "
-                "rien changer aux operations, comme un logiciel de "
-                "comptabilite.\n"
-                "- *Operationnelle (les leviers ci-dessus)* : plus fragile. "
-                "Le TSP optimise une marge mecaniquement limitee (vehicule "
-                "fixe = facteur constant, ~6-15% observe). La substitution "
-                "vehicule (jusqu'a -46%) suppose un renouvellement de "
-                "flotte - decision reelle mais a horizon de plusieurs "
-                "annees, pas un gain immediat.\n\n"
-                "**Pourquoi 3 agents plutot qu'un script ?** Pour un calcul "
-                "fixe, un script pandas suffirait. La valeur du multi-agents "
-                "est dans l'interface de requete : poser n'importe quelle "
-                "question en langage naturel sans coder une fonction par "
-                "cas, avec une verification independante (Critique) avant "
-                "de sortir un chiffre."
+                "**Facteurs d'emission.** DEFRA (UK Department for "
+                "Environment), reference standard pour le reporting GHG "
+                "Protocol Scope 1-3.\n\n"
+                "**Deux niveaux de valeur.**\n\n"
+                "- Declaratif : mesure precise de l'empreinte par tournee, "
+                "utile pour le reporting reglementaire (CSRD, Scope 3) "
+                "independamment de toute action operationnelle.\n"
+                "- Operationnel : le TSP optimise une marge mecaniquement "
+                "limitee (vehicule fixe, facteur d'emission constant sur la "
+                "tournee ; gain de 6 a 15% observe selon la route). La "
+                "substitution de vehicule (jusqu'a -46%) suppose un "
+                "renouvellement de flotte, decision a horizon de plusieurs "
+                "annees.\n\n"
+                "**Justification du systeme multi-agents.** Pour un calcul "
+                "fixe, un script suffirait. L'interet est de traiter des "
+                "requetes en langage naturel non specifiees a l'avance, "
+                "avec une verification independante (agent Critique) avant "
+                "restitution du resultat."
             )
 
         if st.session_state.historique:
@@ -242,14 +238,11 @@ def main() -> None:
         "sandbox Docker isolee."
     )
     st.markdown(
-        "> 📋 **A quoi ça sert, concrètement ?** Mesurer précisément "
-        "l'empreinte carbone de chaque tournée réelle pour le **reporting "
-        "réglementaire** (CSRD, Scope 3), avec les facteurs d'émission "
-        "**DEFRA** — la référence standard du secteur, pas des chiffres "
-        "inventés. Poser n'importe quelle question **en langage naturel** "
-        "(pas besoin de coder une fonction par cas d'usage), avec une "
-        "vérification indépendante avant de sortir un chiffre. *Détail "
-        "complet dans « Méthodologie et valeur ajoutée » →*"
+        "**Objectif** : mesurer l'empreinte carbone de chaque tournée à "
+        "partir des facteurs d'émission DEFRA (référence utilisée pour le "
+        "reporting GHG Protocol Scope 1-3, CSRD), et permettre l'interrogation "
+        "du système en langage naturel plutôt que par une interface figée. "
+        "Méthodologie détaillée dans la sidebar."
     )
 
     requete = st.text_area(

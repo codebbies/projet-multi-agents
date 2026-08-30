@@ -30,28 +30,24 @@ rapport de stage).
 | TSP bas-carbone (réordonnancement des arrêts) | -6.11% | Calcul exact, algo testé séparément (`docker/executor/tsp_tools.py`) |
 | Prédiction ML (route nouvelle, arrêts inconnus) | ~16.9 kg CO2e | Estimation (Random Forest, R²=0.51) |
 
-Facteurs d'émission : **DEFRA** (UK Department for Environment) — référence
-standard utilisée mondialement pour le reporting GHG Protocol (Scope 1-3),
-pas des chiffres inventés pour ce projet.
+Facteurs d'émission : DEFRA (UK Department for Environment), référence
+standard pour le reporting GHG Protocol Scope 1-3.
 
-### Deux valeurs distinctes, à ne pas confondre
+### Deux niveaux de valeur
 
-- **Déclarative (la priorité réelle)** — mesurer précisément l'empreinte de
-  chaque tournée réelle pour le reporting réglementaire (CSRD, Scope 3).
-  Utile même sans jamais rien changer aux opérations, comme un logiciel de
-  comptabilité : sa valeur n'est pas d'optimiser, c'est de produire des
-  chiffres exacts et défendables.
-- **Opérationnelle (les 3 leviers ci-dessus)** — plus fragile. Le TSP
-  optimise une marge mécaniquement limitée (véhicule fixe = facteur constant
-  sur toute la tournée). La substitution de véhicule (jusqu'à -46%) suppose
-  un renouvellement de flotte — décision réelle en logistique, mais à
-  horizon de plusieurs années, pas un gain immédiat.
+- **Déclaratif** — mesure précise de l'empreinte par tournée, pertinente
+  pour le reporting réglementaire (CSRD, Scope 3) indépendamment de toute
+  action opérationnelle.
+- **Opérationnel** — le TSP optimise une marge mécaniquement limitée
+  (véhicule fixe, facteur d'émission constant sur la tournée ; gain de 6 à
+  15% observé selon la route). La substitution de véhicule (jusqu'à -46%)
+  suppose un renouvellement de flotte, décision à horizon de plusieurs
+  années.
 
-La valeur du système **multi-agents** (par opposition au projet carbone en
-général) est dans l'interface de requête : poser n'importe quelle question
-en langage naturel sans coder une fonction par cas d'usage, avec une
-vérification indépendante (Critique) avant de sortir un chiffre — pas dans
-la difficulté du calcul lui-même.
+Justification du système multi-agents : pour un calcul fixe, un script
+suffirait. L'intérêt est de traiter des requêtes en langage naturel non
+spécifiées à l'avance, avec une vérification indépendante (agent Critique)
+avant restitution du résultat.
 
 ## Prérequis
 
