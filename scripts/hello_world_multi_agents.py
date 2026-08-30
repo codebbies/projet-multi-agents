@@ -1,35 +1,17 @@
 """Sprint 1 - Hello World multi-agents : conversation simple entre deux agents AutoGen,
 connectes a Azure OpenAI, pour valider que l'installation AutoGen fonctionne de bout en bout."""
 import asyncio
-import os
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from autogen_agentchat.agents import AssistantAgent
 from autogen_agentchat.conditions import MaxMessageTermination
 from autogen_agentchat.teams import RoundRobinGroupChat
 from autogen_agentchat.ui import Console
-from autogen_ext.models.openai import AzureOpenAIChatCompletionClient
-from dotenv import load_dotenv
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-load_dotenv(PROJECT_ROOT / ".env")
-
-
-def get_model_client() -> AzureOpenAIChatCompletionClient:
-    return AzureOpenAIChatCompletionClient(
-        azure_endpoint=os.environ["AZURE_OPENAI_ENDPOINT"],
-        azure_deployment=os.environ["AZURE_OPENAI_DEPLOYMENT"],
-        model="gpt-4.1-mini-2025-04-14",
-        api_key=os.environ["AZURE_OPENAI_API_KEY"],
-        api_version=os.environ["AZURE_OPENAI_API_VERSION"],
-        model_info={
-            "vision": False,
-            "function_calling": True,
-            "json_output": True,
-            "family": "unknown",
-            "structured_output": False,
-        },
-    )
+from agents.model_client import get_model_client
 
 
 async def main() -> None:

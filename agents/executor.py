@@ -77,7 +77,7 @@ la demande -> affiche "Route inconnue : donnees insuffisantes pour toute estimat
 jamais de chiffre.
    b) Route absente de fact_route_leg MAIS ses arrets sont fournis dans la \
 demande (lat/lng connus) -> calcul deterministe via distance_haversine_km x \
-facteur_kg_co2e_km (regle 4, pas de modele necessaire).
+facteur_kg_co2e_km (meme logique que la regle 2, pas de modele necessaire).
    c) Route absente de fact_route_leg, arrets inconnus, mais caracteristiques de \
 planification fournies (zone, nb_stops, capacite, vehicule) -> utiliser le modele \
 de prediction (regle 3bis).

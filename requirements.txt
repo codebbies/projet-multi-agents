@@ -1,0 +1,18 @@
+# Dependances cote machine hote (orchestration des agents).
+# Pour les dependances de la sandbox Docker de l'Executeur, voir
+# docker/executor/requirements.txt (environnement separe et volontairement
+# different - la sandbox n'a besoin que de pandas/numpy/scikit-learn/joblib).
+
+python-dotenv==1.2.2
+openai==3.3.1
+
+pyautogen==0.10.0
+autogen-agentchat==0.7.5
+autogen-core==0.7.5
+autogen-ext[docker,openai]==0.7.5
+
+pandas==3.0.5
+numpy==2.5.2
+scikit-learn==1.8.0
+joblib==1.5.3
+docker==7.2.0
